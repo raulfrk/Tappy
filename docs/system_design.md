@@ -23,7 +23,7 @@ The backend for this application is agnostic to actual platform where the end-us
 4. The request is also pushed through celery and scheduled for later
 5. A backend component using celery listens for events continuously
 6. The listener is triggered by a notification that is expiring
-    1. The listner gets the notification, it gets its ID and then it requests Postgres SQL for the entry
+    1. The listener gets the notification, it gets its ID and then it requests Postgres SQL for the entry
     2. If the validity version in Postgres and Redis are the same, a notification is sent to user about the tap
         - If they are different, no-op
 

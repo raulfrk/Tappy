@@ -1,0 +1,301 @@
+groups:
+  columns:
+  - autoincrement: true
+    comment: null
+    default: nextval('groups_id_seq'::regclass)
+    name: id
+    nullable: false
+    type: INTEGER
+  - autoincrement: false
+    comment: null
+    default: null
+    name: name
+    nullable: false
+    type: VARCHAR
+  constraints: []
+  foreign_keys: []
+  indexes:
+  - column_names:
+    - name
+    dialect_options:
+      postgresql_include: []
+    duplicates_constraint: groups_name_key
+    include_columns: []
+    name: groups_name_key
+    unique: true
+  primary_key:
+    comment: null
+    constrained_columns:
+    - id
+    dialect_options:
+      postgresql_include: []
+    name: groups_pkey
+groups_admins:
+  columns:
+  - autoincrement: false
+    comment: null
+    default: null
+    name: user_id
+    nullable: false
+    type: INTEGER
+  - autoincrement: false
+    comment: null
+    default: null
+    name: group_id
+    nullable: false
+    type: INTEGER
+  constraints: []
+  foreign_keys:
+  - comment: null
+    constrained_columns:
+    - group_id
+    name: groups_admins_group_id_fkey
+    options: {}
+    referred_columns:
+    - id
+    referred_schema: null
+    referred_table: groups
+  - comment: null
+    constrained_columns:
+    - user_id
+    name: groups_admins_user_id_fkey
+    options: {}
+    referred_columns:
+    - id
+    referred_schema: null
+    referred_table: users
+  indexes: []
+  primary_key:
+    comment: null
+    constrained_columns:
+    - user_id
+    - group_id
+    dialect_options:
+      postgresql_include: []
+    name: groups_admins_pkey
+groups_users:
+  columns:
+  - autoincrement: false
+    comment: null
+    default: null
+    name: user_id
+    nullable: false
+    type: INTEGER
+  - autoincrement: false
+    comment: null
+    default: null
+    name: group_id
+    nullable: false
+    type: INTEGER
+  constraints: []
+  foreign_keys:
+  - comment: null
+    constrained_columns:
+    - group_id
+    name: groups_users_group_id_fkey
+    options: {}
+    referred_columns:
+    - id
+    referred_schema: null
+    referred_table: groups
+  - comment: null
+    constrained_columns:
+    - user_id
+    name: groups_users_user_id_fkey
+    options: {}
+    referred_columns:
+    - id
+    referred_schema: null
+    referred_table: users
+  indexes: []
+  primary_key:
+    comment: null
+    constrained_columns:
+    - user_id
+    - group_id
+    dialect_options:
+      postgresql_include: []
+    name: groups_users_pkey
+taps:
+  columns:
+  - autoincrement: true
+    comment: null
+    default: nextval('taps_id_seq'::regclass)
+    name: id
+    nullable: false
+    type: INTEGER
+  - autoincrement: false
+    comment: null
+    default: null
+    name: description
+    nullable: false
+    type: VARCHAR
+  - autoincrement: false
+    comment: null
+    default: null
+    name: source_user_id
+    nullable: false
+    type: INTEGER
+  - autoincrement: false
+    comment: null
+    default: null
+    name: scheduled_datetime
+    nullable: false
+    type: TIMESTAMP
+  - autoincrement: false
+    comment: null
+    default: null
+    name: nagging_interval_seconds
+    nullable: false
+    type: INTEGER
+  - autoincrement: false
+    comment: null
+    default: null
+    name: acked_until
+    nullable: true
+    type: TIMESTAMP
+  - autoincrement: false
+    comment: null
+    default: null
+    name: created_at
+    nullable: false
+    type: TIMESTAMP
+  - autoincrement: false
+    comment: null
+    default: null
+    name: updated_at
+    nullable: false
+    type: TIMESTAMP
+  - autoincrement: false
+    comment: null
+    default: 'true'
+    name: is_active
+    nullable: false
+    type: BOOLEAN
+  - autoincrement: false
+    comment: null
+    default: 'false'
+    name: is_deleted
+    nullable: false
+    type: BOOLEAN
+  - autoincrement: false
+    comment: null
+    default: null
+    name: acked_by_user_id
+    nullable: true
+    type: INTEGER
+  constraints:
+  - comment: null
+    name: check_acked_until_after_created_at
+    sqltext: acked_until IS NULL OR acked_until > created_at
+  - comment: null
+    name: check_acked_until_after_scheduled_datetime
+    sqltext: acked_until > scheduled_datetime OR acked_until IS NULL
+  - comment: null
+    name: check_nagging_interval_positive
+    sqltext: nagging_interval_seconds > 0
+  - comment: null
+    name: check_scheduled_datetime_after_created_at
+    sqltext: scheduled_datetime > created_at
+  foreign_keys:
+  - comment: null
+    constrained_columns:
+    - acked_by_user_id
+    name: taps_acked_by_user_id_fkey
+    options: {}
+    referred_columns:
+    - id
+    referred_schema: null
+    referred_table: users
+  - comment: null
+    constrained_columns:
+    - source_user_id
+    name: taps_source_user_id_fkey
+    options: {}
+    referred_columns:
+    - id
+    referred_schema: null
+    referred_table: users
+  indexes: []
+  primary_key:
+    comment: null
+    constrained_columns:
+    - id
+    dialect_options:
+      postgresql_include: []
+    name: taps_pkey
+taps_destination_users:
+  columns:
+  - autoincrement: false
+    comment: null
+    default: null
+    name: tap_id
+    nullable: false
+    type: INTEGER
+  - autoincrement: false
+    comment: null
+    default: null
+    name: user_id
+    nullable: false
+    type: INTEGER
+  constraints: []
+  foreign_keys:
+  - comment: null
+    constrained_columns:
+    - tap_id
+    name: taps_destination_users_tap_id_fkey
+    options: {}
+    referred_columns:
+    - id
+    referred_schema: null
+    referred_table: taps
+  - comment: null
+    constrained_columns:
+    - user_id
+    name: taps_destination_users_user_id_fkey
+    options: {}
+    referred_columns:
+    - id
+    referred_schema: null
+    referred_table: users
+  indexes: []
+  primary_key:
+    comment: null
+    constrained_columns:
+    - tap_id
+    - user_id
+    dialect_options:
+      postgresql_include: []
+    name: taps_destination_users_pkey
+users:
+  columns:
+  - autoincrement: true
+    comment: null
+    default: nextval('users_id_seq'::regclass)
+    name: id
+    nullable: false
+    type: INTEGER
+  - autoincrement: false
+    comment: null
+    default: null
+    name: telegram_id
+    nullable: false
+    type: INTEGER
+  constraints: []
+  foreign_keys: []
+  indexes:
+  - column_names:
+    - telegram_id
+    dialect_options:
+      postgresql_include: []
+    duplicates_constraint: users_telegram_id_key
+    include_columns: []
+    name: users_telegram_id_key
+    unique: true
+  primary_key:
+    comment: null
+    constrained_columns:
+    - id
+    dialect_options:
+      postgresql_include: []
+    name: users_pkey

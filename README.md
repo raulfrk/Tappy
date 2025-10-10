@@ -17,14 +17,14 @@ Example single individual usage
 **Studying for exam example:**
 - User Ben creates a new **tap** for himeslf scheduled at 13:00 to study for his Intro to ML exam. Ben then goes about his day.
 - At 13:00 Ben gets tapped about studying for his exam.
-- Ben starts studying and then Acknoledges the tap for 1 hour
+- Ben starts studying and then Acknowledges the tap for 1 hour
 - Ben's ack expires after 1 hour and he is notified of it
 - Ben marks the tap as completed
 
 **Recurrent taps example:**
 - User Ben wants to go to the Gym every day at 10am
 - User Ben creates a recurrent **tap** for every day at 10am
-- Every day Ben gets the tap at 10am, Acknoledges it for 1h 30m and then goes to the GYM
+- Every day Ben gets the tap at 10am, Acknowledges it for 1h 30m and then goes to the GYM
 - By the time the ack expires Ben is done with the gym, he gets a notification about the expiry and that he needs to take action.
 - He marks the **tap** as completed
 
