@@ -1,6 +1,7 @@
 import pytest
 from sqlalchemy.orm import Session
 
+from src.model.user import GroupModel, TelegramUser
 from src.services.group import GroupService
 from src.services.telegram_user import TelegramUserService
 
@@ -17,6 +18,27 @@ def test_create_group(db: Session) -> None:
     # Test that creating the same group again raises an error
     with pytest.raises(ValueError):
         service.create_group(name="Test Group", creating_user=admin_user)
+
+    # Test that creating a group with a non-existent user raises an error
+    non_existent_user = TelegramUser(telegram_id=999, id=999)
+    with pytest.raises(ValueError):
+        service.create_group(name="Another Group", creating_user=non_existent_user)
+
+
+def test_get_group_by_name(db: Session) -> None:
+    """Test getting a group by name when the group does not exist."""
+
+    service = GroupService(db)
+    group = service.get_group_by_name(name="NonExistentGroup")
+    assert group is None
+
+    # Test getting a group by name when the group exists
+    admin_user = TelegramUserService(db).create_user(telegram_id=1)
+    created_group = service.create_group(name="ExistingGroup", creating_user=admin_user)
+    fetched_group = service.get_group_by_name(name="ExistingGroup")
+    assert fetched_group is not None
+    assert fetched_group.id == created_group.id
+    assert fetched_group.name == created_group.name
 
 
 def test_promote_to_admin(db: Session) -> None:
@@ -53,3 +75,31 @@ def test_promote_to_admin(db: Session) -> None:
     admin_ids = [admin.id for admin in group.admins]
     assert admin_user.id in admin_ids
     assert target_user.id in admin_ids
+
+    # Test promoting a non-existent user should raise an error
+    non_existent_user = user_service.get_grouped_user(telegram_id=999)
+    assert non_existent_user is None
+    with pytest.raises(ValueError):
+        group_service.promote_to_admin(
+            group,
+            admin_user,
+            TelegramUser(telegram_id=999, id=999),
+        )
+    # Test promoting by a non-existent admin should raise an error
+    non_existent_admin = user_service.get_grouped_user(telegram_id=998)
+    assert non_existent_admin is None
+    with pytest.raises(ValueError):
+        group_service.promote_to_admin(
+            group,
+            TelegramUser(telegram_id=998, id=998),
+            target_user,
+        )
+    # Test promoting in a non-existent group should raise an error
+    non_existent_group = group_service.get_group_by_name(name="NonExistentGroup")
+    assert non_existent_group is None
+    with pytest.raises(ValueError):
+        group_service.promote_to_admin(
+            GroupModel(name="NonExistentGroup", id=999),
+            admin_user,
+            target_user,
+        )

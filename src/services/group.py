@@ -14,7 +14,7 @@ class GroupService:
         creator_user = self._db.query(User).filter_by(id=creating_user.id).first()
         if not creator_user:
             raise ValueError(
-                f"Creating user with id '{creating_user.id}' does not exist."
+                f"Creator user with id '{creating_user.id}' does not exist."
             )
         new_group = Group(name=name)
         new_group.users.append(creator_user)
