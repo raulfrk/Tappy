@@ -10,7 +10,9 @@ def test_create_group(db: Session) -> None:
     """Test creating a group."""
 
     service = GroupService(db)
-    admin_user = TelegramUserService(db).create_user(telegram_id=1)
+    admin_user = TelegramUserService(db).create_user(
+        telegram_id=1, telegram_username="adminuser"
+    )
     group = service.create_group(name="Test Group", creating_user=admin_user)
 
     assert group.id is not None
@@ -33,7 +35,9 @@ def test_get_group_by_name(db: Session) -> None:
     assert group is None
 
     # Test getting a group by name when the group exists
-    admin_user = TelegramUserService(db).create_user(telegram_id=1)
+    admin_user = TelegramUserService(db).create_user(
+        telegram_id=1, telegram_username="adminuser"
+    )
     created_group = service.create_group(name="ExistingGroup", creating_user=admin_user)
     fetched_group = service.get_group_by_name(name="ExistingGroup")
     assert fetched_group is not None
@@ -46,9 +50,13 @@ def test_promote_to_admin(db: Session) -> None:
 
     # Create users
     user_service = TelegramUserService(db)
-    admin_user = user_service.create_user(telegram_id=1)
-    target_user = user_service.create_user(telegram_id=2)
-    outsider_user = user_service.create_user(telegram_id=3)
+    admin_user = user_service.create_user(telegram_id=1, telegram_username="adminuser")
+    target_user = user_service.create_user(
+        telegram_id=2, telegram_username="targetuser"
+    )
+    outsider_user = user_service.create_user(
+        telegram_id=3, telegram_username="outsideruser"
+    )
 
     # Create a group
     group_service = GroupService(db)

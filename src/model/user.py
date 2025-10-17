@@ -7,6 +7,7 @@ class UserModel(BaseModel):
 
 class TelegramUser(UserModel):
     telegram_id: int = Field(..., gt=0, description="Unique Telegram user ID")
+    telegram_username: str | None = None
     model_config = ConfigDict(from_attributes=True)
 
 

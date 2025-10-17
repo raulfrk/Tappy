@@ -37,7 +37,7 @@ groups_admins:
     default: null
     name: user_id
     nullable: false
-    type: INTEGER
+    type: BIGINT
   - autoincrement: false
     comment: null
     default: null
@@ -80,7 +80,7 @@ groups_users:
     default: null
     name: user_id
     nullable: false
-    type: INTEGER
+    type: BIGINT
   - autoincrement: false
     comment: null
     default: null
@@ -123,7 +123,7 @@ taps:
     default: nextval('taps_id_seq'::regclass)
     name: id
     nullable: false
-    type: INTEGER
+    type: BIGINT
   - autoincrement: false
     comment: null
     default: null
@@ -135,7 +135,7 @@ taps:
     default: null
     name: source_user_id
     nullable: false
-    type: INTEGER
+    type: BIGINT
   - autoincrement: false
     comment: null
     default: null
@@ -147,7 +147,7 @@ taps:
     default: null
     name: nagging_interval_seconds
     nullable: false
-    type: INTEGER
+    type: BIGINT
   - autoincrement: false
     comment: null
     default: null
@@ -183,7 +183,7 @@ taps:
     default: null
     name: acked_by_user_id
     nullable: true
-    type: INTEGER
+    type: BIGINT
   constraints:
   - comment: null
     name: check_acked_until_after_created_at
@@ -231,13 +231,13 @@ taps_destination_users:
     default: null
     name: tap_id
     nullable: false
-    type: INTEGER
+    type: BIGINT
   - autoincrement: false
     comment: null
     default: null
     name: user_id
     nullable: false
-    type: INTEGER
+    type: BIGINT
   constraints: []
   foreign_keys:
   - comment: null
@@ -274,16 +274,30 @@ users:
     default: nextval('users_id_seq'::regclass)
     name: id
     nullable: false
-    type: INTEGER
+    type: BIGINT
   - autoincrement: false
     comment: null
     default: null
     name: telegram_id
     nullable: false
-    type: INTEGER
+    type: BIGINT
+  - autoincrement: false
+    comment: null
+    default: null
+    name: telegram_username
+    nullable: true
+    type: VARCHAR
   constraints: []
   foreign_keys: []
   indexes:
+  - column_names:
+    - telegram_id
+    dialect_options:
+      postgresql_include: []
+    duplicates_constraint: .nan
+    include_columns: []
+    name: ix_users_telegram_id
+    unique: false
   - column_names:
     - telegram_id
     dialect_options:

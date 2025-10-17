@@ -9,12 +9,18 @@ class TelegramUserService:
     def __init__(self, session: Session):
         self._db = session
 
-    def create_user(self, telegram_id: int) -> TelegramUser:
+    def create_user(self, telegram_id: int, telegram_username: str) -> TelegramUser:
         db_user = self._db.query(User).filter_by(telegram_id=telegram_id).first()
+
         if db_user:
+            # Change username if it changed on telegram
+            if db_user.telegram_username != telegram_username:
+                db_user.telegram_username = telegram_username
+                self._db.commit()
+                self._db.refresh(db_user)
             return TelegramUser.model_validate(db_user)
 
-        new_user = User(telegram_id=telegram_id)
+        new_user = User(telegram_id=telegram_id, telegram_username=telegram_username)
         self._db.add(new_user)
         self._db.commit()
         self._db.refresh(new_user)

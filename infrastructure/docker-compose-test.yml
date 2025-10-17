@@ -1,0 +1,32 @@
+services:
+  python:
+      build:
+        context: ..
+        dockerfile: infrastructure/telegram_bot.dockerfile
+      container_name: telegram_bot
+      command: python3 -m src.bots.telegram.telegram_bot --test
+      volumes:
+        - ../:/app
+      env_file:
+        - ../.env.test  # Contains telegram token
+      working_dir: /app
+  postgres_test:
+    image: postgres:18
+    environment:
+      POSTGRES_USER: tappyuser
+      POSTGRES_PASSWORD: tappypassword
+      POSTGRES_DB: tappydb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5432:5432"   # bind to loopback only (not reachable from the internet)
+
+  redis:
+    image: redis:8
+    volumes:
+      - redis_data:/data
+    command: ["redis-server", "--save", "60", "1", "--appendonly", "yes", "--appendfsync", "everysec"]
+
+volumes:
+  postgres_data:
+  redis_data:

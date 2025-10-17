@@ -1,11 +1,12 @@
 from datetime import datetime
 
 from sqlalchemy import (
+    BigInteger,
     CheckConstraint,
     Column,
     DateTime,
     ForeignKey,
-    Integer,
+    Index,
     String,
     Table,
 )
@@ -62,8 +63,9 @@ class Group(Base):
 class User(Base):
     __tablename__ = "users"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    telegram_id: Mapped[int] = mapped_column(Integer, unique=True, nullable=False)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    telegram_id: Mapped[int] = mapped_column(BigInteger, unique=True, nullable=False)
+    telegram_username: Mapped[str | None] = mapped_column(String, nullable=True)
     groups: Mapped[list["Group"]] = relationship(
         "Group", secondary="groups_users", back_populates="users"
     )
@@ -82,6 +84,8 @@ class User(Base):
         back_populates="acked_by_user", foreign_keys="Tap.acked_by_user_id"
     )
 
+    __table_args__ = (Index("ix_users_telegram_id", "telegram_id"),)
+
     def __repr__(self) -> str:
         return (
             f"<User("
@@ -98,7 +102,7 @@ class User(Base):
 
 class Tap(Base):
     __tablename__ = "taps"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     description: Mapped[str] = mapped_column(String, nullable=False)
     source_user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     source_user: Mapped[User] = relationship(
@@ -111,7 +115,7 @@ class Tap(Base):
     )
     scheduled_datetime: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     nagging_interval_seconds: Mapped[int] = mapped_column(
-        Integer, nullable=False, default=300
+        BigInteger, nullable=False, default=300
     )
     acked_until: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     created_at: Mapped[datetime] = mapped_column(

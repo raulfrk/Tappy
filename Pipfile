@@ -15,6 +15,12 @@ pytest-regressions = "*"
 pandas = "*"
 pandas-stubs = "*"
 pytest-cov = "*"
+python-telegram-bot = "*"
+pytest-asyncio = "*"
+pydantic-settings = "*"
+pgcli = "*"
+alembic = "*"
+typer = "*"
 
 [dev-packages]
 

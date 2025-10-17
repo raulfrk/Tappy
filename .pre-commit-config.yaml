@@ -1,4 +1,4 @@
-exclude: '(^|/)(Pipfile|Pipfile\.lock)$'
+exclude: '(^|/)(Pipfile|Pipfile\.lock)$|alembic_test'
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
@@ -42,7 +42,7 @@ repos:
     hooks:
     - id: mypy
       name: mypy  # run pytest (this is fine since small suite)
-      entry: mypy .
+      entry: mypy --config-file mypy.ini src
       language: system        # uses your currently active venv
       pass_filenames: false   # run full suite (avoid passing changed files)
       always_run: true
