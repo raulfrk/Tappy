@@ -1,3 +1,6 @@
+from typing import TYPE_CHECKING
+
+import loguru
 from sqlalchemy.orm import Session
 
 from src.db.schema import Group, User
@@ -8,11 +11,16 @@ from src.model.user import (
     TelegramUserCreate,
 )
 
+if TYPE_CHECKING:
+    from loguru import Logger
+
 
 class TelegramUserService:
 
-    def __init__(self, session: Session):
+    def __init__(self, session: Session, log: "Logger" = loguru.logger):
         self._db = session
+        self._log = log
+        self._log = self._log.bind(service="TelegramUserService")
 
     def create_user(self, t_user_create: TelegramUserCreate) -> TelegramUser:
         db_user = (
@@ -20,10 +28,15 @@ class TelegramUserService:
             .filter_by(telegram_id=t_user_create.telegram_id)
             .first()
         )
-
+        self._log.info("handling user create", request=t_user_create)
         if db_user:
             # Change username if it changed on telegram
             if db_user.telegram_username != t_user_create.telegram_username:
+                self._log.info(
+                    "user changed username, updating db",
+                    old_username=db_user.telegram_username,
+                    new_username=t_user_create.telegram_username,
+                )
                 db_user.telegram_username = t_user_create.telegram_username
                 self._db.commit()
                 self._db.refresh(db_user)

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import datetime
 from types import SimpleNamespace
 from typing import Any, Protocol
 
@@ -64,6 +65,7 @@ def make_message(sent: SentMessages) -> MakeMessage:
             chat=SimpleNamespace(id=chat_id),
             reply_text=sent.reply_text,
             edit_text=sent.edit_text,
+            date=datetime.now(),
         )
 
     return _make_message

@@ -21,6 +21,7 @@ pydantic-settings = "*"
 pgcli = "*"
 alembic = "*"
 typer = "*"
+loguru = "*"
 
 [dev-packages]
 
