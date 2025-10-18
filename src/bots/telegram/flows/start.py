@@ -1,19 +1,15 @@
 from telegram import Update
 from telegram.ext import ContextTypes
 
+from src.bots.telegram.util import valid_update
 from src.db.connection import get_session
 from src.model.user import TelegramUserCreate
 from src.services.telegram_user import TelegramUserService
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    if (
-        update.effective_user is None
-        or update.message is None
-        or update.effective_user.username is None
-        or update.effective_chat is None
-    ):
-        return
+    if not valid_update(update):
+        raise Exception("Invalid update", update.to_dict())
     session = get_session()
 
     ts_service = TelegramUserService(session)
