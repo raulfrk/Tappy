@@ -65,7 +65,8 @@ class User(Base):
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     telegram_id: Mapped[int] = mapped_column(BigInteger, unique=True, nullable=False)
-    telegram_username: Mapped[str | None] = mapped_column(String, nullable=True)
+    telegram_username: Mapped[str | None] = mapped_column(String, nullable=False)
+    telegram_chat_id: Mapped[int] = mapped_column(BigInteger, nullable=False)
     groups: Mapped[list["Group"]] = relationship(
         "Group", secondary="groups_users", back_populates="users"
     )
@@ -84,7 +85,7 @@ class User(Base):
         back_populates="acked_by_user", foreign_keys="Tap.acked_by_user_id"
     )
 
-    __table_args__ = (Index("ix_users_telegram_id", "telegram_id"),)
+    __table_args__ = (Index("ix_users_telegram_id", "telegram_id", "telegram_chat_id"),)
 
     def __repr__(self) -> str:
         return (

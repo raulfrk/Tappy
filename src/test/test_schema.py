@@ -67,8 +67,8 @@ def test_relationships(db: Session) -> None:
     """Test that relationships between User, Tap, and Group are set up correctly."""
     from src.db.schema import Group, Tap, User
 
-    user1 = User(telegram_id=12345)
-    user2 = User(telegram_id=67890)
+    user1 = User(telegram_id=12345, telegram_username="abc", telegram_chat_id=1)
+    user2 = User(telegram_id=67890, telegram_username="def", telegram_chat_id=2)
     group1 = Group(name="Group1")
     group2 = Group(name="Group2")
 
@@ -102,7 +102,7 @@ def test_constraints(db: Session) -> None:
     """Test that constraints are enforced correctly."""
     from src.db.schema import Tap, User
 
-    user1 = User(telegram_id=12345)
+    user1 = User(telegram_id=12345, telegram_username="newuser", telegram_chat_id=1)
     db.add(user1)
     db.commit()
 

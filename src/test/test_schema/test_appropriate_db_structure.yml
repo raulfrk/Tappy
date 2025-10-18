@@ -285,13 +285,20 @@ users:
     comment: null
     default: null
     name: telegram_username
-    nullable: true
+    nullable: false
     type: VARCHAR
+  - autoincrement: false
+    comment: null
+    default: null
+    name: telegram_chat_id
+    nullable: false
+    type: BIGINT
   constraints: []
   foreign_keys: []
   indexes:
   - column_names:
     - telegram_id
+    - telegram_chat_id
     dialect_options:
       postgresql_include: []
     duplicates_constraint: .nan

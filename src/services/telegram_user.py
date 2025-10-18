@@ -1,7 +1,12 @@
 from sqlalchemy.orm import Session
 
 from src.db.schema import Group, User
-from src.model.user import GroupModel, TelegramGroupedUser, TelegramUser
+from src.model.user import (
+    GroupModel,
+    TelegramGroupedUser,
+    TelegramUser,
+    TelegramUserCreate,
+)
 
 
 class TelegramUserService:
@@ -9,18 +14,22 @@ class TelegramUserService:
     def __init__(self, session: Session):
         self._db = session
 
-    def create_user(self, telegram_id: int, telegram_username: str) -> TelegramUser:
-        db_user = self._db.query(User).filter_by(telegram_id=telegram_id).first()
+    def create_user(self, t_user_create: TelegramUserCreate) -> TelegramUser:
+        db_user = (
+            self._db.query(User)
+            .filter_by(telegram_id=t_user_create.telegram_id)
+            .first()
+        )
 
         if db_user:
             # Change username if it changed on telegram
-            if db_user.telegram_username != telegram_username:
-                db_user.telegram_username = telegram_username
+            if db_user.telegram_username != t_user_create.telegram_username:
+                db_user.telegram_username = t_user_create.telegram_username
                 self._db.commit()
                 self._db.refresh(db_user)
             return TelegramUser.model_validate(db_user)
 
-        new_user = User(telegram_id=telegram_id, telegram_username=telegram_username)
+        new_user = User(**t_user_create.model_dump())
         self._db.add(new_user)
         self._db.commit()
         self._db.refresh(new_user)

@@ -4,15 +4,18 @@ from sqlalchemy.orm import Session
 from src.model.user import GroupModel, TelegramUser
 from src.services.group import GroupService
 from src.services.telegram_user import TelegramUserService
+from src.test.common_users import (
+    admin_user_create,
+    outsider_user_create,
+    target_user_create,
+)
 
 
 def test_create_group(db: Session) -> None:
     """Test creating a group."""
 
     service = GroupService(db)
-    admin_user = TelegramUserService(db).create_user(
-        telegram_id=1, telegram_username="adminuser"
-    )
+    admin_user = TelegramUserService(db).create_user(admin_user_create)
     group = service.create_group(name="Test Group", creating_user=admin_user)
 
     assert group.id is not None
@@ -35,9 +38,7 @@ def test_get_group_by_name(db: Session) -> None:
     assert group is None
 
     # Test getting a group by name when the group exists
-    admin_user = TelegramUserService(db).create_user(
-        telegram_id=1, telegram_username="adminuser"
-    )
+    admin_user = TelegramUserService(db).create_user(admin_user_create)
     created_group = service.create_group(name="ExistingGroup", creating_user=admin_user)
     fetched_group = service.get_group_by_name(name="ExistingGroup")
     assert fetched_group is not None
@@ -50,13 +51,9 @@ def test_promote_to_admin(db: Session) -> None:
 
     # Create users
     user_service = TelegramUserService(db)
-    admin_user = user_service.create_user(telegram_id=1, telegram_username="adminuser")
-    target_user = user_service.create_user(
-        telegram_id=2, telegram_username="targetuser"
-    )
-    outsider_user = user_service.create_user(
-        telegram_id=3, telegram_username="outsideruser"
-    )
+    admin_user = user_service.create_user(admin_user_create)
+    target_user = user_service.create_user(target_user_create)
+    outsider_user = user_service.create_user(outsider_user_create)
 
     # Create a group
     group_service = GroupService(db)

@@ -4,26 +4,38 @@ from sqlalchemy.orm import Session
 from src.model.user import GroupModel, TelegramUser
 from src.services.group import GroupService
 from src.services.telegram_user import TelegramUserService
+from src.test.common_users import (
+    admin_user_create,
+    other_admin_user_create,
+    outsider_admin_user_create,
+    outsider_user_create,
+    regular_user_create,
+    target_user_create,
+)
 
 
 def test_create_telegram_user(db: Session) -> None:
     """Test creating a Telegram user."""
 
     service = TelegramUserService(db)
-    user = service.create_user(telegram_id=12345, telegram_username="testuser")
+    user = service.create_user(admin_user_create)
 
     assert user.id is not None
-    assert user.telegram_id == 12345
+    assert user.telegram_id == admin_user_create.telegram_id
 
     # Test that creating the same user again returns the existing user
-    user2 = service.create_user(telegram_id=12345, telegram_username="testuser")
+    user2 = service.create_user(admin_user_create)
     assert user2.id == user.id
     assert user2.telegram_id == user.telegram_id
 
+    changed_username = admin_user_create.model_copy(
+        update={"telegram_username": "newusername"}
+    )
+
     # Test that updating the username works
-    user3 = service.create_user(telegram_id=12345, telegram_username="newusername")
+    user3 = service.create_user(changed_username)
     assert user3.id == user.id
-    assert user3.telegram_username == "newusername"
+    assert user3.telegram_username == changed_username.telegram_username
 
 
 def test_assign_group_to_user(db: Session) -> None:
@@ -31,10 +43,8 @@ def test_assign_group_to_user(db: Session) -> None:
 
     # Create a user
     user_service = TelegramUserService(db)
-    user = user_service.create_user(telegram_id=12345, telegram_username="testuser")
-    new_user = user_service.create_user(
-        telegram_id=67890, telegram_username="anotheruser"
-    )
+    user = user_service.create_user(admin_user_create)
+    new_user = user_service.create_user(target_user_create)
 
     # Create a group
     group_service = GroupService(db)
@@ -58,15 +68,17 @@ def test_exit_from_group(db: Session) -> None:
 
     # Create a user
     user_service = TelegramUserService(db)
-    user_service.create_user(telegram_id=12345, telegram_username="testuser")
+    user_service.create_user(admin_user_create)
 
-    user = user_service.get_grouped_user(telegram_id=12345)
+    user = user_service.get_grouped_user(telegram_id=admin_user_create.telegram_id)
     assert user is not None
     # Create a group
     group_service = GroupService(db)
     group = group_service.create_group(name="Test Group", creating_user=user)
 
-    user_groups = user_service.get_grouped_user(telegram_id=12345)
+    user_groups = user_service.get_grouped_user(
+        telegram_id=admin_user_create.telegram_id
+    )
     assert user_groups is not None
     # Ensure the user is assigned to the group
     assert len(user_groups.groups) == 1
@@ -103,20 +115,12 @@ def test_kick_from_group(db: Session) -> None:
 
     # Create users
     user_service = TelegramUserService(db)
-    admin_user = user_service.create_user(telegram_id=1, telegram_username="admin")
-    other_admin_user = user_service.create_user(
-        telegram_id=5, telegram_username="otheradmin"
-    )
+    admin_user = user_service.create_user(admin_user_create)
+    other_admin_user = user_service.create_user(other_admin_user_create)
 
-    target_user = user_service.create_user(
-        telegram_id=2, telegram_username="targetuser"
-    )
-    outsider_user = user_service.create_user(
-        telegram_id=3, telegram_username="outsider"
-    )
-    regular_user = user_service.create_user(
-        telegram_id=4, telegram_username="regularuser"
-    )
+    target_user = user_service.create_user(target_user_create)
+    outsider_user = user_service.create_user(outsider_user_create)
+    regular_user = user_service.create_user(regular_user_create)
 
     # Create a group
     group_service = GroupService(db)
@@ -151,9 +155,7 @@ def test_kick_from_group(db: Session) -> None:
         user_service.kick_from_group(group, regular_user, regular_user)
 
     # Attempt to kick by an admin who is not in the group should raise an error
-    outsider_admin = user_service.create_user(
-        telegram_id=6, telegram_username="outsideradmin"
-    )
+    outsider_admin = user_service.create_user(outsider_admin_user_create)
     with pytest.raises(ValueError):
         user_service.kick_from_group(group, outsider_admin, target_user)
 
@@ -194,8 +196,8 @@ def test_assign_group(db: Session) -> None:
     group_service = GroupService(db)
 
     # Create users
-    user1 = user_service.create_user(telegram_id=1, telegram_username="user1")
-    user2 = user_service.create_user(telegram_id=2, telegram_username="user2")
+    user1 = user_service.create_user(admin_user_create)
+    user2 = user_service.create_user(other_admin_user_create)
 
     # Create a group
     group = group_service.create_group(name="Test Group", creating_user=user1)
