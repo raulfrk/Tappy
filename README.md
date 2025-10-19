@@ -45,3 +45,13 @@ Example single individual usage
 - Ben wants to make sure that someone takes the trash out, so he creates a Tap for the group at 18:00 "take out the trash"
 - At 18:00 both Ben and George get the tap together, George is the first to see it and acks it for 5 minutes as he will take the trash out. Ben sees that George acked it so no action for him.
 - 5 minutes later a new notification pops that the tap came unacked for both of them, George marks it complete. Both Ben and George see this.
+
+
+# TODO:
+
+- Create new Exception class for exceptions that need to be propagated to the user
+- Create new decorator for telegram functions that need to handle exceptions and propagate them to the user
+- Finish documentation for existing code
+- Write notification dispatcher that works with celery and redis
+- Write celery tasks for sending notifications
+- Implement first simple tap logic to tap yourself and ack/complete it

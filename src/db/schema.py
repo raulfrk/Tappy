@@ -1,3 +1,90 @@
+"""Tappy DB schema: SQLAlchemy ORM models for User, Group, Tap and association tables.
+Tappy DB schema — SQLAlchemy 2.x ORM models and association tables.
+
+This module declares the database schema for the Tappy application using
+SQLAlchemy's declarative typing (DeclarativeBase, Mapped, mapped_column).
+It defines the core domain models (Group, User, Tap), plus lightweight
+association tables for many-to-many relationships.
+
+Models and key attributes
+- Base
+    - DeclarativeBase subclass used as the ORM base for all models.
+
+- Group
+    - id: primary key (int, autoincrement).
+    - name: unique, non-nullable string.
+    - users: many-to-many relationship to User via groups_users.
+    - admins: many-to-many relationship to User via groups_admins.
+    - __repr__ returns a short identifier useful for debugging.
+
+- User
+    - id: BigInteger primary key.
+    - telegram_id: BigInteger, unique and non-nullable (business identifier).
+    - telegram_username: optional string.
+    - telegram_chat_id: BigInteger, non-nullable.
+    - groups: many-to-many relationship to Group via groups_users.
+    - admin_of_groups: many-to-many relationship to Group via groups_admins.
+    - taps: one-to-many relationship for Tap instances where the user is the source
+      (cascade="all, delete" to remove taps when a user is deleted).
+    - taps_for_user: many-to-many relationship to Tap via taps_destination_users
+      (taps targeting this user).
+    - acked_taps: one-to-many relationship for Tap instances acked by this user.
+    - Index: ix_users_telegram_id on (telegram_id, telegram_chat_id) to speed lookups.
+    - __repr__ includes related entity ids for quick inspection.
+
+- Tap
+    - id: BigInteger primary key.
+    - description: non-nullable string describing the tap.
+    - source_user_id: FK -> users.id (non-nullable).
+    - source_user: relationship back to User.taps.
+    - destination_users: many-to-many relationship to User via taps_destination_users.
+    - scheduled_datetime: non-nullable DateTime when the tap is scheduled.
+    - nagging_interval_seconds: positive BigInteger with a sensible default (300).
+    - acked_until: nullable DateTime until which the tap is considered acknowledged.
+    - created_at, updated_at: DateTime timestamps with defaults and onupdate behavior.
+    - is_active, is_deleted: boolean flags with server_default values.
+    - acked_by_user_id: nullable FK -> users.id and acked_by_user relationship.
+    - Several CheckConstraints to enforce temporal and numeric invariants:
+        - acked_until IS NULL OR acked_until > created_at
+        - scheduled_datetime > created_at
+        - nagging_interval_seconds > 0
+        - acked_until > scheduled_datetime OR acked_until IS NULL
+
+Association tables
+- groups_users: links users and groups (memberships).
+- groups_admins: links users and groups (administrators).
+- taps_destination_users: links taps and destination users.
+
+Usage notes
+- This schema targets SQLAlchemy 2.x typed declarative usage. Map columns use
+  mapped_column() and typing via Mapped[] for static analysis and runtime clarity.
+- Create the schema with Base.metadata.create_all(engine).
+- Take care to provide appropriate BigInteger-compatible primary key handling in
+  your target database (autoincrement behavior differs by backend).
+- The model includes cascade deletes for taps owned by a user; other relationships
+  do not cascade automatically to avoid accidental deletion of shared entities.
+
+Examples
+- Creating tables:
+    engine = create_engine(<DATABASE_URL>)
+    Base.metadata.create_all(engine)
+
+- Typical object creation (using a Session):
+    user = User(telegram_id=..., telegram_chat_id=..., telegram_username=...)
+    group = Group(name="team")
+    group.users.append(user)
+    tap = Tap(
+        description="Check status",
+        source_user=user,
+        scheduled_datetime=datetime.utcnow() + timedelta(hours=1),
+    tap.destination_users.append(user)
+
+This docstring documents the schema structure and major invariants — consult the
+model definitions in this module for full field and relationship details.
+
+Uses SQLAlchemy 2.x declarative typing (DeclarativeBase, Mapped, mapped_column).
+"""
+
 from datetime import datetime
 
 from sqlalchemy import (
@@ -19,6 +106,8 @@ from sqlalchemy.orm import (
 
 
 class Base(DeclarativeBase):
+    """Base class for all ORM models in Tappy."""
+
     pass
 
 
@@ -45,6 +134,8 @@ taps_destination_users = Table(
 
 
 class Group(Base):
+    """ORM model for a Group in Tappy."""
+
     __tablename__ = "groups"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
@@ -57,10 +148,13 @@ class Group(Base):
     )
 
     def __repr__(self) -> str:
+        """String representation of a Group instance for debugging."""
         return f"<Group(id={self.id})>"
 
 
 class User(Base):
+    """ORM model for a User in Tappy."""
+
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
@@ -88,6 +182,7 @@ class User(Base):
     __table_args__ = (Index("ix_users_telegram_id", "telegram_id", "telegram_chat_id"),)
 
     def __repr__(self) -> str:
+        """String representation of a User instance for debugging."""
         return (
             f"<User("
             f"id={self.id}, "
@@ -102,6 +197,9 @@ class User(Base):
 
 
 class Tap(Base):
+    """ORM model for a Tap: a scheduled action from a source user to one or more
+    destination users."""
+
     __tablename__ = "taps"
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     description: Mapped[str] = mapped_column(String, nullable=False)
@@ -158,6 +256,7 @@ class Tap(Base):
     )
 
     def __repr__(self) -> str:
+        """String representation of a Tap instance for debugging."""
         return (
             f"<Tap("
             f"id={self.id}, "
